@@ -7,8 +7,10 @@ const sql3 = sqlite3.verbose();
 export class DatabaseService {
   constructor(private readonly logger: Logger) {}
 
+  private _DBPATH = './src/database/db.sqlite';
+
   private db = new sql3.Database(
-    './src/database/db.sqlite',
+    this._DBPATH,
     sqlite3.OPEN_READWRITE,
     this.instanceErrorHandler.bind(this),
   );
@@ -28,9 +30,11 @@ export class DatabaseService {
 
   private instanceErrorHandler(err) {
     if (err) {
-      this.logger.error(`Error creating database instance: ${err}`);
+      this.logger.error(`ERROR - Error creating database instance: ${err}`);
     } else {
-      this.logger.debug(`Database instance successfully initiated.`);
+      this.logger.log(
+        `OK - Database instance successfully initiated from ${this._DBPATH}.`,
+      );
     }
   }
 }
