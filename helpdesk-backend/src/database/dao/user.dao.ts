@@ -52,7 +52,8 @@ export class UserDAO {
           LEFT JOIN admin a ON u.id = a.user AND u.role = 'admin'
           LEFT JOIN client c ON u.id = c.user AND u.role = 'client'
           LEFT JOIN technician t ON u.id = t.user AND u.role = 'technician';
-          WHERE u.id = ?
+          WHERE
+            u.id = ?
         `;
       return await this.dbConnection.query(sql, [id]);
     } catch (err) {

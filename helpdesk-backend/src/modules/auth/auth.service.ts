@@ -1,25 +1,24 @@
 import {
   Injectable,
   Logger,
-  NotFoundException,
-  UnauthorizedException,
-  NestInterceptor,
-  CallHandler,
   ExecutionContext,
   NotAcceptableException,
+  CanActivate,
+  SetMetadata,
+  UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { UserDAO } from 'src/database/dao/user.dao';
 import { LoginDto as LoginDto } from './dto/LoginDto';
 import { User } from 'src/database/dao/interface';
 import argon2 from 'argon2';
 import { JwtService } from '@nestjs/jwt';
-import { Observable } from 'rxjs';
+import { Reflector } from '@nestjs/core';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userDAO: UserDAO,
-    private readonly logger: Logger,
     private readonly jwt: JwtService,
   ) {}
 
@@ -57,16 +56,18 @@ export class AuthService {
   }
 }
 
+export const ROLES_KEY = 'roles';
+export const Roles = (...roles: string[]) => SetMetadata(ROLES_KEY, roles);
+
 @Injectable()
-export class AuthInterceptor implements NestInterceptor {
+export class AuthGuard implements CanActivate {
   constructor(
+    private reflector: Reflector,
     private readonly jwt: JwtService,
     private readonly userDAO: UserDAO,
   ) {}
-  async intercept(
-    context: ExecutionContext,
-    next: CallHandler<any>,
-  ): Promise<Observable<any>> {
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const tokenCookie = request.cookies?.['token'];
     const payload = this.jwt.decode(tokenCookie);
@@ -77,6 +78,29 @@ export class AuthInterceptor implements NestInterceptor {
       request.user = user[0];
     }
 
-    return next.handle();
+    const requiredRoles = this.reflector.getAllAndOverride<string[]>(
+      ROLES_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+
+    if (!requiredRoles || requiredRoles.length === 0) {
+      return true;
+    }
+
+    const user = request.user;
+
+    if (!user?.role) {
+      throw new UnauthorizedException(
+        'Client is missing authentication for guarded route.',
+      );
+    }
+    const hasRole = requiredRoles.includes(user.role);
+    if (!hasRole) {
+      throw new ForbiddenException(
+        'Client has insufficient permission for guarded route.',
+      );
+    }
+
+    return true;
   }
 }

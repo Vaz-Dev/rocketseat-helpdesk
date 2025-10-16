@@ -1,9 +1,9 @@
 import { Logger, Module } from '@nestjs/common';
-import { AuthInterceptor, AuthService } from './auth.service';
+import { AuthGuard, AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UserDAO } from 'src/database/dao/user.dao';
 import { JwtModule } from '@nestjs/jwt';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   providers: [
@@ -11,8 +11,8 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     Logger,
     UserDAO,
     {
-      provide: APP_INTERCEPTOR,
-      useClass: AuthInterceptor,
+      provide: APP_GUARD,
+      useClass: AuthGuard,
     },
   ],
   controllers: [AuthController],

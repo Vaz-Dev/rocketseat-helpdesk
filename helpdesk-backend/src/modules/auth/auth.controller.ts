@@ -4,29 +4,27 @@ import {
   Res,
   Body,
   Post,
-  Delete,
-  Put,
   Req,
   HttpStatus,
-  Param,
-  NotFoundException,
-  UnauthorizedException,
+  NotAcceptableException,
+  BadRequestException,
 } from '@nestjs/common';
 import { LoginDto } from './dto/LoginDto';
 import type { Response } from 'express';
-import { AuthInterceptor, AuthService } from './auth.service';
-import { User } from 'src/database/dao/interface';
+import { AuthService, Roles } from './auth.service';
 import type { ExtendedRequest } from 'src/types/extended-request.interface';
 
-@Controller('login')
+@Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post()
-  async Login(
-    @Body() data: LoginDto,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  @Post('login')
+  async Login(@Body() data: LoginDto, @Res() res: Response) {
+    if (!data.email || !data.password) {
+      throw new BadRequestException(
+        'Invalid body, login with body: JSON = {email: ?, password: ?}',
+      );
+    }
     const token = await this.authService.login(data);
     res
       .cookie('token', token, {
@@ -40,14 +38,31 @@ export class AuthController {
       .json({ message: 'Login successful' });
   }
 
-  @Get()
-  AuthToken(@Req() req: ExtendedRequest) {
+  @Get('check')
+  Check(@Req() req: ExtendedRequest, @Res() res: Response) {
     if (req.auth) {
-      return { auth: req.auth, user: req.user };
+      res.status(HttpStatus.ACCEPTED).json({
+        message: `Cookie token successfully verified`,
+        email: req.user?.email,
+        role: req.user?.role,
+      });
     } else {
-      throw new NotFoundException(
-        'AuthToken cookie not found, try POST /login',
+      throw new NotAcceptableException(
+        'Cookie token not found, try POST /auth/login',
       );
+    }
+  }
+
+  @Get('logout')
+  Logout(@Req() req: ExtendedRequest, @Res() res: Response) {
+    if (!req.auth) {
+      throw new NotAcceptableException(
+        'Cookie token not found, client not logged in',
+      );
+    } else {
+      res.clearCookie('token').status(HttpStatus.ACCEPTED).json({
+        message: `Cookie token successfully removed, client logged out.`,
+      });
     }
   }
 }

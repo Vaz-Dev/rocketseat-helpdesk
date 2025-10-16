@@ -1,6 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { AuthInterceptor } from './modules/auth/auth.service';
 import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
