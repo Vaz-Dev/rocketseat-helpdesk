@@ -50,8 +50,8 @@ export class AuthService {
       savedPassword,
       tryPassword,
     ): Promise<boolean> {
-      //return await argon2.verify(savedPassword, tryPassword);
-      return (await savedPassword) == tryPassword;
+      return await argon2.verify(savedPassword, tryPassword);
+      //return (await savedPassword) == tryPassword;
     }
   }
 }

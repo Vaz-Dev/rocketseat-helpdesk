@@ -1,8 +1,8 @@
 import {
   Controller,
   Get,
-  Res,
   Body,
+  Res,
   Post,
   Req,
   HttpStatus,
@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { LoginDto } from './dto/LoginDto';
 import type { Response } from 'express';
-import { AuthService, Roles } from './auth.service';
+import { AuthService } from './auth.service';
 import type { ExtendedRequest } from 'src/types/extended-request.interface';
 
 @Controller('auth')

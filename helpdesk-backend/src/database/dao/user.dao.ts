@@ -1,7 +1,6 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { User } from './interface';
 import { DBConnection } from '../db-connection';
-import { LoginDto } from 'src/modules/auth/dto/LoginDto';
 
 @Injectable()
 export class UserDAO {
@@ -59,6 +58,36 @@ export class UserDAO {
     } catch (err) {
       this.logger.error(`Error finding user with id ${id}: ${err}`);
       return [];
+    }
+  }
+
+  public async addAdmin(data: User): Promise<boolean> {
+    try {
+      const sqlUser = `
+          INSERT INTO
+            user
+              (id, name, password, email, role)
+            VALUES
+              (?, ?, ?, ?, 'admin');
+        `;
+      await this.dbConnection.query(sqlUser, [
+        data.user_id,
+        data.name,
+        data.password,
+        data.email,
+      ]);
+      const sqlAdmin = `
+        INSERT INTO
+          admin
+            (id, user)
+          VALUES
+            (?, ?);
+        `;
+      await this.dbConnection.query(sqlAdmin, [data.role_id, data.user_id]);
+      return true;
+    } catch (err) {
+      this.logger.error(`Error adding new user of role '${data.role}': ${err}`);
+      return false;
     }
   }
 }

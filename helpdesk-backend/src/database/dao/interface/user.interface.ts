@@ -4,7 +4,7 @@ export interface User {
   user_id: string;
   name: string;
   email: string;
-  password: string;
+  password?: string;
   pfp?: Blob;
   role: 'admin' | 'client' | 'technician';
   role_id?: string;
