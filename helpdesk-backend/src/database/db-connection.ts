@@ -15,12 +15,12 @@ export class DatabaseService {
     this.instanceErrorHandler.bind(this),
   );
 
-  async query(sql: string, ...data): Promise<any[]> {
+  async query(sql: string, params: any[] = []): Promise<any[]> {
     return new Promise((resolve, reject) => {
-      this.db.all(sql, ...data, (err, rows: any[]) => {
+      this.db.all(sql, params, (err, rows: any[]) => {
         if (err) {
-          this.logger.error(`Error sending query to database: ${err}`);
-          return reject(new Error(err));
+          this.logger.error(`Error sending query to database -> ${err}`);
+          return reject(new Error(`${err}`));
         } else {
           return resolve(rows);
         }

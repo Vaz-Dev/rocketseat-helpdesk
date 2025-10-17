@@ -35,16 +35,18 @@ export class AuthController {
         maxAge: 30 * 60 * 1000,
       })
       .status(HttpStatus.ACCEPTED)
-      .json({ message: 'Login successful' });
+      .json({ message: 'Login successful, new cookie token sent to client.' });
   }
 
   @Get('check')
   Check(@Req() req: ExtendedRequest, @Res() res: Response) {
-    if (req.auth) {
+    if (req.auth && req.user?.email) {
       res.status(HttpStatus.ACCEPTED).json({
         message: `Cookie token successfully verified`,
         email: req.user?.email,
+        name: req.user?.name,
         role: req.user?.role,
+        pfp: req.user?.pfp,
       });
     } else {
       throw new NotAcceptableException(

@@ -23,9 +23,7 @@ export class AuthService {
   ) {}
 
   public async login(data: LoginDto) {
-    const user: User[] | null = await this.userDAO.getUserByEmail(
-      data['email'],
-    );
+    const user: User[] | null = await this.userDAO.getUserByEmail(data.email);
     if (verifyUserExists(user)) {
       if (await verifyPassword(user[0].password, data.password)) {
         const payload = { id: user[0].user_id };
@@ -50,15 +48,15 @@ export class AuthService {
       savedPassword,
       tryPassword,
     ): Promise<boolean> {
-      return await argon2.verify(savedPassword, tryPassword);
-      //return (await savedPassword) == tryPassword;
+      const useHash = true;
+      return useHash
+        ? argon2.verify(savedPassword, tryPassword)
+        : (await savedPassword) == tryPassword;
     }
   }
 }
 
-export const ROLES_KEY = 'roles';
-export const Roles = (...roles: string[]) => SetMetadata(ROLES_KEY, roles);
-
+export const Roles = (...roles: string[]) => SetMetadata('roles', roles);
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
@@ -73,22 +71,21 @@ export class AuthGuard implements CanActivate {
     const payload = this.jwt.decode(tokenCookie);
 
     if (tokenCookie) {
-      const user = await this.userDAO.getExtendedUserById(payload.user_id);
+      const user = await this.userDAO.getExtendedUserById(payload.id);
       request.auth = payload;
       request.user = user[0];
     }
 
-    const requiredRoles = this.reflector.getAllAndOverride<string[]>(
-      ROLES_KEY,
-      [context.getHandler(), context.getClass()],
-    );
-
-    if (!requiredRoles || requiredRoles.length === 0) {
-      return true;
-    }
+    const requiredRoles = this.reflector.getAllAndOverride<string[]>('roles', [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
     const user = request.user;
 
+    if (!requiredRoles || requiredRoles.length === 0 || user?.role == 'admin') {
+      return true;
+    }
     if (!user?.role) {
       throw new UnauthorizedException(
         'Client is missing authentication for guarded route.',

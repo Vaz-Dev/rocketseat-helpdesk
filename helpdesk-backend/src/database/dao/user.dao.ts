@@ -1,4 +1,9 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  Inject,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { User } from './interface';
 import { DBConnection } from '../db-connection';
 
@@ -50,11 +55,17 @@ export class UserDAO {
             user u
           LEFT JOIN admin a ON u.id = a.user AND u.role = 'admin'
           LEFT JOIN client c ON u.id = c.user AND u.role = 'client'
-          LEFT JOIN technician t ON u.id = t.user AND u.role = 'technician';
+          LEFT JOIN technician t ON u.id = t.user AND u.role = 'technician'
           WHERE
             u.id = ?
         `;
-      return await this.dbConnection.query(sql, [id]);
+      if (id) {
+        return await this.dbConnection.query(sql, [id]);
+      } else {
+        throw new InternalServerErrorException(
+          `Intercepted invalid query to the database.`,
+        );
+      }
     } catch (err) {
       this.logger.error(`Error finding user with id ${id}: ${err}`);
       return [];
@@ -87,6 +98,109 @@ export class UserDAO {
       return true;
     } catch (err) {
       this.logger.error(`Error adding new user of role '${data.role}': ${err}`);
+      return false;
+    }
+  }
+
+  public async addClient(data: User): Promise<boolean> {
+    try {
+      const sqlUser = `
+              INSERT INTO
+                user
+                  (id, name, password, email, role)
+                VALUES
+                  (?, ?, ?, ?, 'client');
+            `;
+      await this.dbConnection.query(sqlUser, [
+        data.user_id,
+        data.name,
+        data.password,
+        data.email,
+      ]);
+      const sqlClient = `
+            INSERT INTO
+              client
+                (id, user)
+              VALUES
+                (?, ?);
+            `;
+      await this.dbConnection.query(sqlClient, [data.role_id, data.user_id]);
+      return true;
+    } catch (err) {
+      this.logger.error(`Error adding new user of role '${data.role}': ${err}`);
+      return false;
+    }
+  }
+
+  public async addTechnician(data: User): Promise<boolean> {
+    try {
+      const sqlUser = `
+                INSERT INTO
+                  user
+                    (id, name, password, email, role)
+                  VALUES
+                    (?, ?, ?, ?, 'technician');
+              `;
+      await this.dbConnection.query(sqlUser, [
+        data.user_id,
+        data.name,
+        data.password,
+        data.email,
+      ]);
+      const sqlTechnician = `
+              INSERT INTO
+                technician
+                  (id, user, working_hours)
+                VALUES
+                  (?, ?, ?);
+              `;
+      await this.dbConnection.query(sqlTechnician, [
+        data.role_id,
+        data.user_id,
+        data.working_hours,
+      ]);
+      return true;
+    } catch (err) {
+      this.logger.error(`Error adding new user of role '${data.role}': ${err}`);
+      return false;
+    }
+  }
+
+  public async updateUser(data: User): Promise<boolean> {
+    try {
+      const sql = `
+          UPDATE
+            user
+          SET
+            name = ?,
+            password = ?,
+            pfp = ?
+          WHERE
+            id = ?
+        `;
+      await this.dbConnection.query(sql, [
+        data.name,
+        data.password,
+        data.pfp,
+        data.user_id,
+      ]);
+      if (data.role == 'technician') {
+        const sqlTechnician = `
+            UPDATE
+              technician
+            SET
+              working_hours = ?
+            WHERE
+              id = ?
+          `;
+        await this.dbConnection.query(sqlTechnician, [
+          data.working_hours,
+          data.role_id,
+        ]);
+      }
+      return true;
+    } catch (err) {
+      this.logger.error(`Error updating user '${data.email}' info: ${err}`);
       return false;
     }
   }
