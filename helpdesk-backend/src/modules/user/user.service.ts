@@ -8,7 +8,13 @@ import { UserDAO } from 'src/database/dao/user.dao';
 import argon2 from 'argon2';
 import { User } from 'src/database/dao/interface';
 import { randomUUID } from 'node:crypto';
-import { AdminDto, ClientDto, TechnicianDto, UserUpdateDto } from './dto';
+import {
+  AdminDto,
+  ClientDto,
+  TechnicianDto,
+  UserGetDto,
+  UserUpdateDto,
+} from './dto';
 
 @Injectable()
 export class UserService {
@@ -81,8 +87,7 @@ export class UserService {
   }
 
   public async updateUser(data: UserUpdateDto): Promise<boolean> {
-    const user: User[] = await this.userDAO.getExtendedUserById(data.id);
-    console.log(user[0]);
+    const user: User[] = await this.userDAO.getUserById(data.id);
     if (!user[0].user_id) {
       throw new NotFoundException(`No user found with id: ${data.id}`);
     }
@@ -101,5 +106,37 @@ export class UserService {
       working_hours: data.working_hours ?? user[0].working_hours,
     };
     return this.userDAO.updateUser(updatedUser);
+  }
+
+  public async getUser(data: UserGetDto): Promise<User | null> {
+    let user: User | null = null;
+    if (!data.id) {
+      const result = await this.userDAO.getUserByEmail(data.email);
+      user = result[0];
+    } else {
+      const result = await this.userDAO.getUserById(data.id);
+      user = result[0];
+    }
+    if (user && user.user_id) {
+      user.password = undefined;
+      return user;
+    }
+    return null;
+  }
+
+  public async listUser(param: User['role'] | 'all'): Promise<User[]> {
+    if (
+      param == 'admin' ||
+      param == 'client' ||
+      param == 'technician' ||
+      param == 'all'
+    ) {
+      const result = this.userDAO.listUsers(param);
+      return result;
+    } else {
+      throw new NotFoundException(
+        `User service received invalid parameter, try 'all' or a user role.`,
+      );
+    }
   }
 }

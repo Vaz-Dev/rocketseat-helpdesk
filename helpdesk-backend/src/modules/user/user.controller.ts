@@ -9,8 +9,17 @@ import {
   HttpStatus,
   InternalServerErrorException,
   Param,
+  Query,
+  Get,
+  NotFoundException,
 } from '@nestjs/common';
-import { AdminDto, ClientDto, TechnicianDto, UserUpdateDto } from './dto';
+import {
+  AdminDto,
+  ClientDto,
+  TechnicianDto,
+  UserGetDto,
+  UserUpdateDto,
+} from './dto';
 import type { Response } from 'express';
 import { Roles } from '../auth/auth.service';
 import { UserService } from './user.service';
@@ -105,23 +114,50 @@ export class UserController {
   @Roles('admin') // Only admins are allowed to update other user's accounts.
   @Put(':id')
   async UpdateOtherAccount(
-    // THIS FUNCTION WAS NOT TESTED YET
     @Body() data: UserUpdateDto,
     @Res() res: Response,
-    @Param() id: string,
+    @Param() param: any,
   ) {
     if (
-      !id ||
+      !param.id ||
       (!data.name && !data.password && !data.pfp && !data.working_hours)
     ) {
       throw new BadRequestException(
         'Invalid body, update your another account with body: JSON = {name?: ?, password?: ?, pfp?: ?, working_hours?: ?} (at least one)',
       );
     }
-    data.id = id;
+    data.id = param.id;
     await this.userService.updateUser(data);
     res.status(HttpStatus.ACCEPTED).json({
       message: 'User account info successfully updated.',
     });
+  }
+
+  @Roles('admin')
+  @Get(':role')
+  async listUser(@Param() params: any, @Res() res: Response) {
+    const result = await this.userService.listUser(params.role);
+    if (result.length > 0) {
+      res.status(HttpStatus.FOUND).json(result);
+    } else {
+      throw new NotFoundException('No users found.');
+    }
+  }
+
+  @Roles('admin', 'technician', 'client')
+  @Get()
+  async getUserQuery(
+    @Query('email') email: string,
+    @Query('id') id: string,
+    @Res() res: Response,
+  ) {
+    const data: UserGetDto = { email, id };
+    const result = await this.userService.getUser(data);
+    if (!result) {
+      throw new NotFoundException(
+        'User not found - Controller recieved null value.',
+      );
+    }
+    res.status(HttpStatus.ACCEPTED).json(result);
   }
 }

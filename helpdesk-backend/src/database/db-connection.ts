@@ -5,7 +5,9 @@ const sql3 = sqlite3.verbose();
 
 @Injectable()
 export class DatabaseService {
-  constructor(private readonly logger: Logger) {}
+  private readonly logger = new Logger(DatabaseService.name, {
+    timestamp: true,
+  });
 
   private _DBPATH = './src/database/db.sqlite';
 
@@ -30,11 +32,9 @@ export class DatabaseService {
 
   private instanceErrorHandler(err) {
     if (err) {
-      this.logger.error(`ERROR - Error creating database instance: ${err}`);
+      this.logger.error(`Error creating database instance: ${err}`);
     } else {
-      this.logger.log(
-        `OK - Database instance successfully initiated from ${this._DBPATH}.`,
-      );
+      this.logger.log(`Database connected from ${this._DBPATH}.`);
     }
   }
 }

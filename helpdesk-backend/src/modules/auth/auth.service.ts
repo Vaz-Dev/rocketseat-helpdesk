@@ -71,7 +71,7 @@ export class AuthGuard implements CanActivate {
     const payload = this.jwt.decode(tokenCookie);
 
     if (tokenCookie) {
-      const user = await this.userDAO.getExtendedUserById(payload.id);
+      const user = await this.userDAO.getUserById(payload.id);
       request.auth = payload;
       request.user = user[0];
     }

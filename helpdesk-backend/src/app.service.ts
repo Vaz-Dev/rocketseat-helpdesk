@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class AppService {
-  getHello(): string {
-    return 'Hello World!';
+  listRoutes() {
+    return JSON.stringify({ title: 'List of all routes', auth: [], user: [] });
   }
 }
