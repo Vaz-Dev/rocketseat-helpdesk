@@ -12,6 +12,8 @@ import {
   Query,
   Get,
   NotFoundException,
+  Delete,
+  ForbiddenException,
 } from '@nestjs/common';
 import {
   AdminDto,
@@ -159,5 +161,42 @@ export class UserController {
       );
     }
     res.status(HttpStatus.ACCEPTED).json(result);
+  }
+
+  @Roles('admin', 'client', 'technician')
+  @Delete()
+  async deleteUserOther(
+    @Query('id') id: string,
+    @Res() res: Response,
+    @Req() req: ExtendedRequest,
+  ) {
+    if (!id) {
+      const result = await this.userService.deleteUser(req.user?.user_id);
+      if (result) {
+        res
+          .status(HttpStatus.ACCEPTED)
+          .json({ message: 'Deleted your account: ' + req.user?.email });
+      } else {
+        throw new InternalServerErrorException(
+          'Something went wrong, account not deleted',
+        );
+      }
+    } else {
+      if (req.user?.role != 'admin') {
+        throw new ForbiddenException('Only admins can delete other accounts');
+      } else {
+        const target = await this.userService.getUser({ id: id });
+        const result = await this.userService.deleteUser(id);
+        if (result && target) {
+          res
+            .status(HttpStatus.ACCEPTED)
+            .json({ message: 'Deleted the account: ' + target.email });
+        } else {
+          throw new InternalServerErrorException(
+            'Something went wrong, account not deleted',
+          );
+        }
+      }
+    }
   }
 }

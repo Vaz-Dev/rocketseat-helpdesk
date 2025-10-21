@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
@@ -88,7 +89,7 @@ export class UserService {
 
   public async updateUser(data: UserUpdateDto): Promise<boolean> {
     const user: User[] = await this.userDAO.getUserById(data.id);
-    if (!user[0].user_id) {
+    if (!user[0]?.user_id) {
       throw new NotFoundException(`No user found with id: ${data.id}`);
     }
     let newPassword: string | null = null;
@@ -138,5 +139,27 @@ export class UserService {
         `User service received invalid parameter, try 'all' or a user role.`,
       );
     }
+  }
+
+  public async deleteUser(id: User['user_id']): Promise<boolean> {
+    const user: User[] = await this.userDAO.getUserById(id);
+    if (!user[0]?.user_id) {
+      throw new NotFoundException(`No user found with id: ${id}`);
+    }
+    if (user[0].role == 'admin') {
+      const adminCount = await this.listUser('admin');
+      if (adminCount.length == 1) {
+        throw new BadRequestException(
+          'Cannot delete the last existing admin account, create another first',
+        );
+      }
+    }
+    const result = await this.userDAO.deleteUser(id);
+    if (!result) {
+      throw new InternalServerErrorException(
+        'Something went wrong while trying to delete user',
+      );
+    }
+    return true;
   }
 }

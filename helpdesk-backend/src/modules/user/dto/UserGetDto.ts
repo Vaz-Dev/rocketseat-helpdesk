@@ -1,4 +1,4 @@
 export class UserGetDto {
-  id: string;
-  email: string;
+  id?: string;
+  email?: string;
 }

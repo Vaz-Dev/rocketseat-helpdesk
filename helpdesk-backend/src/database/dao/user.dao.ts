@@ -5,7 +5,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { User } from './interface';
-import { DBConnection } from '../db-connection';
+import { DBConnection } from '../database.service';
 
 @Injectable()
 export class UserDAO {
@@ -265,15 +265,24 @@ export class UserDAO {
     }
   }
 
-  public async deleteUser(param): Promise<boolean> {
+  public async deleteUser(id): Promise<boolean> {
     try {
-      const sql = `
+      for (const roleTable of ['admin', 'technician', 'client']) {
+        const sqlRole = `
+            DELETE FROM
+              ${roleTable}
+            WHERE
+              user = ?
+          `;
+        await this.dbConnection.query(sqlRole, [id]);
+      }
+      const sqlUser = `
           DELETE FROM
             user
           WHERE
             id = ?
         `;
-      await this.dbConnection.query(sql, [param]);
+      await this.dbConnection.query(sqlUser, [id]);
       return true;
     } catch (err) {
       this.logger.error(`Error occurred while deleting user: ${err}`);

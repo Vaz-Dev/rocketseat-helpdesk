@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { LoginDto } from './dto/LoginDto';
 import type { Response } from 'express';
-import { AuthService } from './auth.service';
+import { AuthService, cookieOptions } from './auth.service';
 import type { ExtendedRequest } from 'src/types/extended-request.interface';
 
 @Controller('auth')
@@ -27,13 +27,7 @@ export class AuthController {
     }
     const token = await this.authService.login(data);
     res
-      .cookie('token', token, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'strict',
-        path: '/',
-        maxAge: 30 * 60 * 1000,
-      })
+      .cookie('token', token, cookieOptions)
       .status(HttpStatus.ACCEPTED)
       .json({ message: 'Login successful, new cookie token sent to client.' });
   }

@@ -1,6 +1,5 @@
 import {
   Injectable,
-  Logger,
   ExecutionContext,
   NotAcceptableException,
   CanActivate,
@@ -12,8 +11,25 @@ import { UserDAO } from 'src/database/dao/user.dao';
 import { LoginDto as LoginDto } from './dto/LoginDto';
 import { User } from 'src/database/dao/interface';
 import argon2 from 'argon2';
-import { JwtService } from '@nestjs/jwt';
+import { JwtModuleOptions, JwtService } from '@nestjs/jwt';
 import { Reflector } from '@nestjs/core';
+import { CookieOptions, Response } from 'express';
+import { ExtendedRequest } from 'src/types/extended-request.interface';
+
+// Configurations for auth service and guard.
+const useHash = true;
+const refreshTokenOnEveryAuth = true;
+export const cookieOptions: CookieOptions = {
+  httpOnly: true,
+  secure: true,
+  sameSite: 'strict',
+  path: '/',
+  maxAge: 30 * 60 * 1000,
+};
+export const jwtOptions: JwtModuleOptions = {
+  secret: 'segredo_muito_secreto',
+  signOptions: { expiresIn: '30m' },
+};
 
 @Injectable()
 export class AuthService {
@@ -48,7 +64,6 @@ export class AuthService {
       savedPassword,
       tryPassword,
     ): Promise<boolean> {
-      const useHash = true;
       return useHash
         ? argon2.verify(savedPassword, tryPassword)
         : (await savedPassword) == tryPassword;
@@ -66,9 +81,10 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
+    const request: ExtendedRequest = context.switchToHttp().getRequest();
+    const response: Response = context.switchToHttp().getResponse();
     const tokenCookie = request.cookies?.['token'];
-    const payload = this.jwt.decode(tokenCookie);
+    let payload = this.jwt.decode(tokenCookie);
 
     if (tokenCookie) {
       const user = await this.userDAO.getUserById(payload.id);
@@ -83,7 +99,7 @@ export class AuthGuard implements CanActivate {
 
     const user = request.user;
 
-    if (!requiredRoles || requiredRoles.length === 0 || user?.role == 'admin') {
+    if (!requiredRoles || requiredRoles.length === 0) {
       return true;
     }
     if (!user?.role) {
@@ -96,6 +112,10 @@ export class AuthGuard implements CanActivate {
       throw new ForbiddenException(
         'Client has insufficient permission for guarded route.',
       );
+    } else if (refreshTokenOnEveryAuth) {
+      payload = { id: request.user.user_id };
+      const token = this.jwt.sign(payload);
+      response.cookie('token', token, cookieOptions);
     }
 
     return true;
