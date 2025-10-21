@@ -1,4 +1,4 @@
-import { Logger, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AuthGuard, AuthService, jwtOptions } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UserDAO } from 'src/database/dao/user.dao';
@@ -8,7 +8,6 @@ import { APP_GUARD } from '@nestjs/core';
 @Module({
   providers: [
     AuthService,
-    Logger,
     UserDAO,
     {
       provide: APP_GUARD,

@@ -2,7 +2,6 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
-  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { UserDAO } from 'src/database/dao/user.dao';
@@ -19,10 +18,7 @@ import {
 
 @Injectable()
 export class UserService {
-  constructor(
-    private readonly userDAO: UserDAO,
-    private readonly logger: Logger,
-  ) {}
+  constructor(private readonly userDAO: UserDAO) {}
 
   private async userAlreadyExists(email: User['email']): Promise<boolean> {
     const checkEmail = await this.userDAO.getUserByEmail(email);
