@@ -37,10 +37,9 @@ export class AuthController {
     if (req.auth && req.user?.email) {
       res.status(HttpStatus.ACCEPTED).json({
         message: `Cookie token successfully verified`,
-        email: req.user?.email,
         name: req.user?.name,
         role: req.user?.role,
-        pfp: req.user?.pfp,
+        expires: new Date(req.auth.exp * 1000),
       });
     } else {
       throw new NotAcceptableException(

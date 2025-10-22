@@ -267,22 +267,13 @@ export class UserDAO {
 
   public async deleteUser(id): Promise<boolean> {
     try {
-      for (const roleTable of ['admin', 'technician', 'client']) {
-        const sqlRole = `
-            DELETE FROM
-              ${roleTable}
-            WHERE
-              user = ?
-          `;
-        await this.dbConnection.query(sqlRole, [id]);
-      }
-      const sqlUser = `
+      const sql = `
           DELETE FROM
             user
           WHERE
             id = ?
         `;
-      await this.dbConnection.query(sqlUser, [id]);
+      await this.dbConnection.query(sql, [id]);
       return true;
     } catch (err) {
       this.logger.error(`Error occurred while deleting user: ${err}`);

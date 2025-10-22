@@ -164,13 +164,13 @@ export class UserController {
   }
 
   @Roles('admin', 'client', 'technician')
-  @Delete()
-  async deleteUserOther(
-    @Query('id') id: string,
+  @Delete(':id')
+  async deleteUser(
+    @Param() param: any,
     @Res() res: Response,
     @Req() req: ExtendedRequest,
   ) {
-    if (!id) {
+    if (param.id == req.user?.user_id) {
       const result = await this.userService.deleteUser(req.user?.user_id);
       if (result) {
         res
@@ -185,8 +185,8 @@ export class UserController {
       if (req.user?.role != 'admin') {
         throw new ForbiddenException('Only admins can delete other accounts');
       } else {
-        const target = await this.userService.getUser({ id: id });
-        const result = await this.userService.deleteUser(id);
+        const target = await this.userService.getUser({ id: param.id });
+        const result = await this.userService.deleteUser(param.id);
         if (result && target) {
           res
             .status(HttpStatus.ACCEPTED)

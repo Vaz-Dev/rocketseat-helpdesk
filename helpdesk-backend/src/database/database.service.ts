@@ -34,6 +34,7 @@ export class DatabaseService {
     if (err) {
       this.logger.error(`Error creating database instance: ${err}`);
     } else {
+      this.query(`PRAGMA foreign_keys = ON;`, []);
       this.logger.log(`Database connected from ${this._DBPATH}.`);
     }
   }

@@ -82,9 +82,7 @@ export class ServiceTypeController {
   ) {
     if (
       !param.id ||
-      !data.name ||
       typeof !data.name != 'string' ||
-      !data.value ||
       typeof !data.value != 'number'
     ) {
       const result = await this.serviceTypeService.updateServiceType(
