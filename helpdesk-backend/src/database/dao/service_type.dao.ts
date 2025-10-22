@@ -36,6 +36,8 @@ export class ServiceTypeDAO {
             id, name, value
           FROM
             service_type
+          WHERE
+            deleted = "false"
         `;
       return await this.dbConnection.query(sql, []);
     } catch (err) {
@@ -48,7 +50,7 @@ export class ServiceTypeDAO {
     try {
       const sql = `
             SELECT
-              id, name, value
+              id, name, value, deleted
             FROM
               service_type
             WHERE
@@ -68,11 +70,17 @@ export class ServiceTypeDAO {
           service_type
         SET
           name = ?,
-          value = ?
+          value = ?,
+          deleted = ?
         WHERE
           id = ?
       `;
-      await this.dbConnection.query(sql, [data.name, data.value, data.id]);
+      await this.dbConnection.query(sql, [
+        data.name,
+        data.value,
+        data.deleted,
+        data.id,
+      ]);
       return true;
     } catch (err) {
       this.logger.error(
@@ -85,8 +93,10 @@ export class ServiceTypeDAO {
   public async deleteServiceType(id): Promise<boolean> {
     try {
       const sql = `
-          DELETE FROM
+          UPDATE
             service_type
+          SET
+            deleted = "true"
           WHERE
             id = ?
         `;

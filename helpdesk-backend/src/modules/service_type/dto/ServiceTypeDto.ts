@@ -1,5 +1,4 @@
-export interface ServiceType {
-  id?: number;
+export class ServiceTypeDTO {
   name: string;
   value: number;
   deleted?: 'true' | 'false';
