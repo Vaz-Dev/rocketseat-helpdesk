@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { LoginDto } from './dto/LoginDto';
 import type { Response } from 'express';
-import { AuthService, cookieOptions } from './auth.service';
+import { AuthService, Roles } from './auth.service';
 import type { ExtendedRequest } from 'src/types/extended-request.interface';
 
 @Controller('auth')
@@ -27,11 +27,12 @@ export class AuthController {
     }
     const token = await this.authService.login(data);
     res
-      .cookie('token', token, cookieOptions)
+      .cookie('token', token, this.authService.cookieOptions)
       .status(HttpStatus.ACCEPTED)
       .json({ message: 'Login successful, new cookie token sent to client.' });
   }
 
+  @Roles('client', 'technician', 'admin')
   @Get('check')
   Check(@Req() req: ExtendedRequest, @Res() res: Response) {
     if (req.auth && req.user?.email) {
@@ -39,7 +40,7 @@ export class AuthController {
         message: `Cookie token successfully verified`,
         name: req.user?.name,
         role: req.user?.role,
-        expires: new Date(req.auth.exp * 1000),
+        minutes_to_expire: (req.auth.exp - Date.now() / 1000) / 60,
       });
     } else {
       throw new NotAcceptableException(
