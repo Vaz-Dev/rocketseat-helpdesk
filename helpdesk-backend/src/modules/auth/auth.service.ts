@@ -8,7 +8,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { UserDAO } from 'src/database/dao/user.dao';
-import { LoginDto as LoginDto } from './dto/LoginDto';
+import { LoginDto } from './dto/LoginDto';
 import { User } from 'src/database/dao/interface';
 import argon2 from 'argon2';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';

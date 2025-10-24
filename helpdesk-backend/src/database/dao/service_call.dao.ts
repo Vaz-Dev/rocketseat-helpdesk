@@ -52,7 +52,7 @@ export class ServiceCallDAO {
     }
   }
 
-  public async getServiceCallsByRoleId(id: number): Promise<ServiceCall[]> {
+  public async getServiceCallsByRoleId(id: string): Promise<ServiceCall[]> {
     // Clients and technicians are assigned to an service call using their role id, this function uses that to find their related calls.
     try {
       const sql = `

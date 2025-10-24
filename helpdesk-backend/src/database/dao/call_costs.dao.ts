@@ -52,6 +52,23 @@ export class CallCostsDAO {
     }
   }
 
+  public async getCallCostById(id: number): Promise<CallCosts[]> {
+    try {
+      const sql = `
+          SELECT
+            value
+          FROM
+            call_costs
+          WHERE
+            id = ?
+        `;
+      return await this.dbConnection.query(sql, [id]);
+    } catch (err) {
+      this.logger.error(`Failed to get call cost with id '${id}': ${err}`);
+      return [];
+    }
+  }
+
   public async deleteCallCosts(id: number): Promise<boolean> {
     try {
       const sql = `
