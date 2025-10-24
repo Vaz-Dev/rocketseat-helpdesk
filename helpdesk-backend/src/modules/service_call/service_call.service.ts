@@ -5,11 +5,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ServiceCallDAO } from 'src/database/dao/service_call.dao';
-import { ServiceCallDto } from './dto/CallDto';
+import { ServiceCallDto } from './dto/AddCallDto';
 import { ServiceTypeDAO } from 'src/database/dao/service_type.dao';
 import { CallCostsDAO } from 'src/database/dao/call_costs.dao';
 import { ServiceCall } from 'src/database/dao/interface';
-import { UpdateCallDto } from './dto/CallUpdateDto';
+import { UpdateCallDto } from './dto/UpdateCall';
 import { CallCostDto } from './dto/CallCostDto';
 
 @Injectable()
