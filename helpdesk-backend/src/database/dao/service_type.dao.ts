@@ -91,6 +91,7 @@ export class ServiceTypeDAO {
   }
 
   public async deleteServiceType(id): Promise<boolean> {
+    // SOFT DELETE, because actually deleting the service type could delete a massive amount of calls.
     try {
       const sql = `
           UPDATE
