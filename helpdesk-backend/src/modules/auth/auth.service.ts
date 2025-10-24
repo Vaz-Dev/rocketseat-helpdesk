@@ -104,7 +104,7 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: ExtendedRequest = context.switchToHttp().getRequest();
     const response: Response = context.switchToHttp().getResponse();
-    const tokenCookie = request.cookies?.['token'];
+    let tokenCookie = request.cookies?.['token'];
     let payload: any = this.jwt.decode(tokenCookie);
 
     // This gets the @Roles defined in the controller for that route.
@@ -112,19 +112,26 @@ export class AuthGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
+    // Case the route has no required roles.
     if (!requiredRoles || requiredRoles.length === 0) {
       try {
+        // If client has a token, get its info to the request if valid anyway.
         this.jwt.verify(tokenCookie, { secret: this.authService.jwtSecret });
         payload = this.jwt.decode(tokenCookie);
         const user = await this.userDAO.getUserById(payload.id);
         request.auth = payload;
         request.user = user[0];
+        // If token and info are all valid, also refreshes the token duration (by generating a new one)
+        payload = { id: request.user.user_id };
+        tokenCookie = this.jwt.sign(payload, this.authService.jwtSignOptions);
+        response.cookie('token', tokenCookie, this.authService.cookieOptions);
       } catch {
         return true;
       }
       return true;
     }
     try {
+      // Verify the token
       this.jwt.verify(tokenCookie, { secret: this.authService.jwtSecret });
     } catch {
       response.clearCookie('token');
@@ -133,22 +140,24 @@ export class AuthGuard implements CanActivate {
       );
     }
     if (tokenCookie) {
+      // Get client's info and add to the request.
       const user = await this.userDAO.getUserById(payload.id);
       request.auth = payload;
       request.user = user[0];
     }
     if (!request.user?.role) {
+      // Check if the client has any role at all.
       throw new UnauthorizedException(
         'Client is missing authentication for guarded route.',
       );
     }
     const hasRole = requiredRoles.includes(request.user.role);
     if (!hasRole) {
+      // Check if the client has the required role for this route.
       throw new ForbiddenException(
         'Client has insufficient permission for guarded route.',
       );
     } else if (this.refreshTokenOnEveryAuth) {
-      console.log(this.refreshTokenOnEveryAuth);
       payload = { id: request.user.user_id };
       const token = this.jwt.sign(payload, this.authService.jwtSignOptions);
       response.cookie('token', token, this.authService.cookieOptions);

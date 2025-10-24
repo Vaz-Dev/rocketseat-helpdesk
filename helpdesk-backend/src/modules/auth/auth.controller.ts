@@ -32,7 +32,6 @@ export class AuthController {
       .json({ message: 'Login successful, new cookie token sent to client.' });
   }
 
-  @Roles('client', 'technician', 'admin')
   @Get('check')
   Check(@Req() req: ExtendedRequest, @Res() res: Response) {
     if (req.auth && req.user?.email) {
