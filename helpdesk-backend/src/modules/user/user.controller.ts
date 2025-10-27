@@ -106,7 +106,7 @@ export class UserController {
         'Invalid body, update your own account with body: JSON = {name?: ?, password?: ?, pfp?: ?, working_hours?: ?} (at least one)',
       );
     }
-    data.id = req.user.user_id;
+    data.id = req.user?.user_id;
     await this.userService.updateUser(data);
     res.status(HttpStatus.ACCEPTED).json({
       message: 'User account info successfully updated.',
@@ -170,7 +170,7 @@ export class UserController {
     @Res() res: Response,
     @Req() req: ExtendedRequest,
   ) {
-    if (param.id == req.user?.user_id) {
+    if (param.id == req.user?.user_id && req.user?.user_id) {
       const result = await this.userService.deleteUser(req.user?.user_id);
       if (result) {
         res

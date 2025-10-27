@@ -17,7 +17,7 @@ import { ServiceTypeService } from './service_type.service';
 import { ServiceTypeDTO } from './dto/ServiceTypeDto';
 import type { Response } from 'express';
 
-@Controller('service-type')
+@Controller('service/type')
 export class ServiceTypeController {
   constructor(private readonly serviceTypeService: ServiceTypeService) {}
 

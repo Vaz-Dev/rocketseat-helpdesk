@@ -74,7 +74,54 @@ export class UserDAO {
         );
       }
     } catch (err) {
-      this.logger.error(`Error finding user with id ${id}: ${err}`);
+      this.logger.error(`Error finding user with id '${id}': ${err}`);
+      return [];
+    }
+  }
+
+  public async getUserByRoleId(role_id: string): Promise<User[]> {
+    try {
+      const sqlRole = `
+          SELECT
+            user
+          FROM
+            admin
+          WHERE
+            id = ?
+
+          UNION ALL
+
+          SELECT
+            user
+          FROM
+            technician
+          WHERE
+            id = ?
+
+          UNION ALL
+
+          SELECT
+            user
+          FROM
+            client
+          WHERE
+            id = ?
+        `;
+      const resultRole = await this.dbConnection.query(sqlRole, [
+        role_id,
+        role_id,
+        role_id,
+      ]);
+      if (resultRole.length < 1) {
+        return [];
+      } else if (resultRole.length > 1) {
+        throw new Error(
+          `UserDAO.GetUserByRoleId expected one/none rows but received multiple`,
+        );
+      }
+      return await this.getUserById(resultRole[0].user);
+    } catch (err) {
+      this.logger.error(`Error finding user with role_id '${role_id}': ${err}`);
       return [];
     }
   }

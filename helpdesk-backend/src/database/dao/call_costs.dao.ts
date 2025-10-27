@@ -56,7 +56,7 @@ export class CallCostsDAO {
     try {
       const sql = `
           SELECT
-            value
+            value, service_call
           FROM
             call_costs
           WHERE
