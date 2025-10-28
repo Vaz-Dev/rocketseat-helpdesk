@@ -51,6 +51,11 @@ export class ServiceCallService {
     if (callServiceType.length != 1 || !data.client) {
       throw new InternalServerErrorException(`Calls service got invalid data.`);
     }
+    if (callServiceType[0].deleted == 'true') {
+      throw new BadRequestException(
+        `Cannot create a call with a soft deleted service type, those remain for legacy compatibility only`,
+      );
+    }
     const client = await this.userDAO.getUserByRoleId(data.client);
     const technician = await this.userDAO.getUserByRoleId(data.technician);
     if (client.length != 1 || technician.length != 1) {
@@ -84,6 +89,7 @@ export class ServiceCallService {
     // Populates ServiceCall.additional_costs using the call id.
     const additional_costs = await this.callCostsDAO.getCallCostsByCallId(id);
     // Replaces the service type id with the actual object inside the call.
+    console.log(result[0].service);
     const service = await this.serviceTypeDAO.getServiceType(result[0].service);
     // Populates ServiceCall.client using his/her role_id.
     const client = await this.userDAO.getUserByRoleId(result[0].client);
@@ -106,10 +112,10 @@ export class ServiceCallService {
       description: result[0].description,
       total_value: result[0].total_value,
       status: result[0].status,
-      service: service[0],
       id: result[0].id,
       created_at: result[0].created_at,
       updated_at: result[0].updated_at,
+      service: service[0],
       client: client[0],
       technician: technician[0],
       additional_costs: additional_costs,

@@ -164,7 +164,8 @@ export class ServiceCallController {
     return result;
   }
 
-  @Roles('admin', 'client', 'technician')
+  // Project requirements imply clients should not be able to edit calls, remove commented parts in this method to reverse.
+  @Roles('admin', /*'client',*/ 'technician')
   @Put('/:id')
   async updateServiceCall(
     @Req() req: ExtendedRequest,
@@ -204,7 +205,7 @@ export class ServiceCallController {
     if (req.user?.role != 'admin') {
       const targetCall = await this.callService.getServiceCall(param.id);
       if (
-        req.user?.role_id != targetCall.client.role_id &&
+        // req.user?.role_id != targetCall.client.role_id &&
         req.user?.role_id != targetCall.technician.role_id
       ) {
         throw new ForbiddenException(
@@ -224,7 +225,8 @@ export class ServiceCallController {
     }
   }
 
-  @Roles('admin', 'client')
+  // Project requirements imply clients should not be able to delete calls, remove commented parts in this method to reverse.
+  @Roles('admin' /*, 'client'*/)
   @Delete('/:id')
   async deleteServiceCall(
     @Req() req: ExtendedRequest,
@@ -232,12 +234,12 @@ export class ServiceCallController {
     @Res() res: Response,
   ) {
     if (req.user?.role != 'admin') {
-      const targetCall = await this.callService.getServiceCall(param.id);
-      if (req.user?.role_id != targetCall.client.role_id) {
-        throw new ForbiddenException(
-          `User missing permission to delete this call, not admin or client who created this call.`,
-        );
-      }
+      // const targetCall = await this.callService.getServiceCall(param.id);
+      // if (req.user?.role_id != targetCall.client.role_id) {
+      throw new ForbiddenException(
+        `User missing permission to delete this call, not admin or client who created this call.`,
+      );
+      // }
     }
     const result = await this.callService.deleteServiceCall(param.id);
     if (result) {

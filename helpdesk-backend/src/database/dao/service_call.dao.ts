@@ -80,7 +80,7 @@ export class ServiceCallDAO {
     try {
       const sql = `
         SELECT
-          id, title, description, updated_at, created_at, client, technician, total_value, status
+          id, title, description, updated_at, service, created_at, client, technician, total_value, status
         FROM
           service_call
         WHERE

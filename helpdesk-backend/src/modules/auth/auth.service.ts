@@ -32,6 +32,8 @@ export class AuthService {
     private readonly config: ConfigService,
   ) {
     this.tokenMaxAgeMinutes =
+      // do not change the default values here, add a .env file instead, the strings here are the variable keys which .env should have
+      // for example (in .env) = TOKEN_MAX_AGE_MINUTES = 60
       this.config.get<number>('TOKEN_MAX_AGE_MINUTES') ?? 30;
     this.useHash = this.config.get<boolean>('USE_HASH') ?? true;
     this.jwtSecret = this.config.get<string>('JWT_SECRET') ?? randomUUID();
@@ -92,6 +94,7 @@ export class AuthGuard implements CanActivate {
   ) {
     this.refreshTokenOnEveryAuth =
       this.config.get<boolean>('TOKEN_REFRESH_ON_EVERY_AUTH') ?? true;
+    // Nest.js ConfigService thinks that "false" in .env converted to boolean = true
     if (typeof this.refreshTokenOnEveryAuth == 'string') {
       if (this.refreshTokenOnEveryAuth == 'true') {
         this.refreshTokenOnEveryAuth = true;

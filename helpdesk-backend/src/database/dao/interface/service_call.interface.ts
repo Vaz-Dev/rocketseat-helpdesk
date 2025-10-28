@@ -1,7 +1,3 @@
-import { CallCosts } from './call_costs.interface';
-import { ServiceType } from './service_type.interface';
-import { User } from './user.interface';
-
 export interface ServiceCall {
   id?: number;
   service: number;
