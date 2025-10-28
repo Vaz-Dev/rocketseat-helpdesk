@@ -10,6 +10,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
   Res,
 } from '@nestjs/common';
@@ -20,7 +21,6 @@ import { CallCostDto } from './dto/CallCostDto';
 import { addServiceCallDto } from './dto/AddCallDto';
 import type { ExtendedRequest } from 'src/types/extended-request.interface';
 import { UpdateCallDto } from './dto/UpdateCall';
-import { ServiceCall } from 'src/database/dao/interface';
 
 @Controller('service/call')
 export class ServiceCallController {
@@ -58,7 +58,20 @@ export class ServiceCallController {
   @Roles('technician', 'admin')
   @Delete('/cost/:id')
   // TODO: needs to deny other technicians access, only allow the one who is assigned to the call
-  async deleteCallCost(@Res() res: Response, @Param() param: { id: string }) {
+  async deleteCallCost(
+    @Res() res: Response,
+    @Param() param: { id: string },
+    @Req() req: ExtendedRequest,
+  ) {
+    const call = await this.callService.getCallbyCostId(Number(param.id));
+    if (
+      req.user?.role != 'admin' &&
+      req.user?.role_id != call.technician.role_id
+    ) {
+      throw new ForbiddenException(
+        'Your account is not allowed to modify this call',
+      );
+    }
     const result = await this.callService.deleteCallCosts(Number(param.id));
     if (result) {
       res.status(HttpStatus.ACCEPTED).json({
@@ -71,12 +84,13 @@ export class ServiceCallController {
     }
   }
 
-  @Roles('client')
+  @Roles('client', 'admin')
   @Post()
   async addServiceCall(
     @Res() res: Response,
     @Body() data: addServiceCallDto,
     @Req() req: ExtendedRequest,
+    @Query('client_id') client_id: string,
   ) {
     if (
       !data ||
@@ -89,9 +103,16 @@ export class ServiceCallController {
         `Invalid body, to add a call cost use POST /service/call = JSON { title = ?, description = ?, service = ?, technician = ? }`,
       );
     }
+    if (req.user?.role == 'client' && req.user?.role_id) {
+      client_id = req.user?.role_id;
+    } else if (req.user?.role != 'admin' || !client_id) {
+      throw new BadRequestException(
+        'Admins using this route need to use query param of a client-id (role_id)',
+      );
+    }
     const serviceCall: addServiceCallDto = {
       ...data,
-      client: req.user?.role_id,
+      client: client_id,
     };
     const result = await this.callService.addServiceCall(serviceCall);
     if (result) {

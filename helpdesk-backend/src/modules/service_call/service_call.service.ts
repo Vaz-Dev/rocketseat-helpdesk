@@ -159,11 +159,21 @@ export class ServiceCallService {
     return true;
   }
 
+  public async getCallbyCostId(id: number): Promise<ExtendedCallDto> {
+    const callCost = await this.callCostsDAO.getCallCostById(id);
+    if (callCost.length != 1 || !callCost[0].service_call) {
+      throw new InternalServerErrorException(
+        `Failed to find call cost, service received invalid data.`,
+      );
+    }
+    return await this.getServiceCall(callCost[0].service_call);
+  }
+
   public async deleteCallCosts(id: number): Promise<boolean> {
     const callCost = await this.callCostsDAO.getCallCostById(id);
     if (callCost.length != 1 || !callCost[0].service_call) {
       throw new InternalServerErrorException(
-        `Failed to delete call cost, service received invalid data.`,
+        `Failed to find call cost, service received invalid data.`,
       );
     }
     const costResult = await this.callCostsDAO.deleteCallCosts(id);
