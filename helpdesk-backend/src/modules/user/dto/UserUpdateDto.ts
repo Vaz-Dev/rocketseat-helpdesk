@@ -6,4 +6,5 @@ export class UserUpdateDto {
   password?: string;
   pfp?: Blob;
   working_hours?: string;
+  last_logout?: number;
 }

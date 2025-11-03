@@ -17,6 +17,7 @@ import { CookieOptions, Response } from 'express';
 import { ExtendedRequest } from 'src/types/extended-request.interface';
 import { randomUUID } from 'node:crypto';
 import { ConfigService } from '@nestjs/config';
+import { JwtPayload } from 'jsonwebtoken';
 
 @Injectable()
 export class AuthService {
@@ -56,19 +57,11 @@ export class AuthService {
       : (await savedPassword) == tryPassword;
   }
 
-  private verifyUserExists(user): boolean {
-    if (user && user.length == 1) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   public async login(data: LoginDto) {
-    const user: User[] | null = await this.userDAO.getUserByEmail(data.email);
-    if (this.verifyUserExists(user)) {
-      if (await this.verifyPassword(user[0].password, data.password)) {
-        const payload = { id: user[0].user_id };
+    const [user] = await this.userDAO.getUserByEmail(data.email);
+    if (user) {
+      if (await this.verifyPassword(user.password, data.password)) {
+        const payload = { id: user.user_id };
         const token = this.jwt.sign(payload, this.jwtSignOptions);
         return token;
       } else {
@@ -108,7 +101,7 @@ export class AuthGuard implements CanActivate {
     const request: ExtendedRequest = context.switchToHttp().getRequest();
     const response: Response = context.switchToHttp().getResponse();
     let tokenCookie = request.cookies?.['token'];
-    let payload: any = this.jwt.decode(tokenCookie);
+    let payload: JwtPayload = this.jwt.decode(tokenCookie);
 
     // This gets the @Roles defined in the controller for that route.
     const requiredRoles = this.reflector.getAllAndOverride<string[]>('roles', [
@@ -121,9 +114,14 @@ export class AuthGuard implements CanActivate {
         // If client has a token, get its info to the request if valid anyway.
         this.jwt.verify(tokenCookie, { secret: this.authService.jwtSecret });
         payload = this.jwt.decode(tokenCookie);
-        const user = await this.userDAO.getUserById(payload.id);
+        const [user] = await this.userDAO.getUserById(payload.id);
+        if (payload.iat && user.last_logout && user.last_logout > payload.iat) {
+          throw new UnauthorizedException(
+            "Client's token refused: older than last logout",
+          );
+        }
         request.auth = payload;
-        request.user = user[0];
+        request.user = user;
         // If token and info are all valid, also refreshes the token duration (by generating a new one)
         payload = { id: request.user.user_id };
         tokenCookie = this.jwt.sign(payload, this.authService.jwtSignOptions);
@@ -144,9 +142,14 @@ export class AuthGuard implements CanActivate {
     }
     if (tokenCookie) {
       // Get client's info and add to the request.
-      const user = await this.userDAO.getUserById(payload.id);
+      const [user] = await this.userDAO.getUserById(payload.id);
+      if (payload.iat && user.last_logout && user.last_logout > payload.iat) {
+        throw new UnauthorizedException(
+          "Client's token refused: older than last logout.",
+        );
+      }
       request.auth = payload;
-      request.user = user[0];
+      request.user = user;
     }
     if (!request.user?.role) {
       // Check if the client has any role at all.

@@ -25,6 +25,7 @@ export class UserDAO {
                   u.pfp,
                   u.role,
                   u.password,
+                  u.last_logout,
                   COALESCE(CASE WHEN u.role = 'admin' THEN a.id ELSE NULL END,
                            CASE WHEN u.role = 'client' THEN c.id ELSE NULL END,
                            CASE WHEN u.role = 'technician' THEN t.id ELSE NULL END) AS role_id,
@@ -54,10 +55,11 @@ export class UserDAO {
             u.pfp,
             u.role,
             u.password,
+            u.last_logout,
             COALESCE(CASE WHEN u.role = 'admin' THEN a.id ELSE NULL END,
                      CASE WHEN u.role = 'client' THEN c.id ELSE NULL END,
                      CASE WHEN u.role = 'technician' THEN t.id ELSE NULL END) AS role_id,
-            CASE WHEN u.role = 'technician' THEN t.working_hours ELSE NULL END AS technician_working_hours
+            CASE WHEN u.role = 'technician' THEN t.working_hours ELSE NULL END AS working_hours
           FROM
             user u
           LEFT JOIN admin a ON u.id = a.user AND u.role = 'admin'
@@ -228,7 +230,8 @@ export class UserDAO {
           SET
             name = ?,
             password = ?,
-            pfp = ?
+            pfp = ?,
+            last_logout = ?
           WHERE
             id = ?
         `;
@@ -236,6 +239,7 @@ export class UserDAO {
         data.name,
         data.password,
         data.pfp,
+        data.last_logout,
         data.user_id,
       ]);
       if (data.role == 'technician') {

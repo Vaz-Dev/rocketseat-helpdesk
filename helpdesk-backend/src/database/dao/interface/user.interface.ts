@@ -9,4 +9,5 @@ export interface User {
   role?: 'admin' | 'client' | 'technician';
   role_id?: string;
   working_hours?: string;
+  last_logout?: number;
 }

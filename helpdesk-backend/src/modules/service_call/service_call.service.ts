@@ -35,37 +35,37 @@ export class ServiceCallService {
     id: number,
     value: number,
   ): Promise<boolean> {
-    const call = await this.serviceCallDAO.getServiceCall(id);
-    if (call.length != 1) {
+    const [call] = await this.serviceCallDAO.getServiceCall(id);
+    if (!call) {
       throw new NotFoundException(`No call found with id: ${id}`);
     }
-    call[0].total_value = call[0].total_value + value;
-    await this.serviceCallDAO.updateServiceCall(call[0]);
+    call.total_value = call.total_value + value;
+    await this.serviceCallDAO.updateServiceCall(call);
     return true;
   }
 
   public async addServiceCall(data: addServiceCallDto): Promise<boolean> {
-    const callServiceType = await this.serviceTypeDAO.getServiceType(
+    const [callServiceType] = await this.serviceTypeDAO.getServiceType(
       data.service,
     );
-    if (callServiceType.length != 1 || !data.client) {
+    if (!callServiceType || !data.client) {
       throw new InternalServerErrorException(`Calls service got invalid data.`);
     }
-    if (callServiceType[0].deleted == 'true') {
+    if (callServiceType.deleted == 'true') {
       throw new BadRequestException(
         `Cannot create a call with a soft deleted service type, those remain for legacy compatibility only`,
       );
     }
-    const client = await this.userDAO.getUserByRoleId(data.client);
-    const technician = await this.userDAO.getUserByRoleId(data.technician);
-    if (client.length != 1 || technician.length != 1) {
+    const [client] = await this.userDAO.getUserByRoleId(data.client);
+    const [technician] = await this.userDAO.getUserByRoleId(data.technician);
+    if (!client || !technician) {
       throw new BadRequestException(
         `Call service's add method couldn't validate the related client/technician`,
       );
     }
     const call: ServiceCall = {
       service: data.service,
-      total_value: callServiceType[0].value,
+      total_value: callServiceType.value,
       client: data.client,
       technician: data.technician,
       title: data.title,
@@ -84,40 +84,39 @@ export class ServiceCallService {
   }
 
   public async getServiceCall(id: number): Promise<ExtendedCallDto> {
-    const result = await this.serviceCallDAO.getServiceCall(id);
+    const [result] = await this.serviceCallDAO.getServiceCall(id);
 
     // Populates ServiceCall.additional_costs using the call id.
     const additional_costs = await this.callCostsDAO.getCallCostsByCallId(id);
     // Replaces the service type id with the actual object inside the call.
-    console.log(result[0].service);
-    const service = await this.serviceTypeDAO.getServiceType(result[0].service);
+    const [service] = await this.serviceTypeDAO.getServiceType(result.service);
     // Populates ServiceCall.client using his/her role_id.
-    const client = await this.userDAO.getUserByRoleId(result[0].client);
-    delete client[0].password;
+    const [client] = await this.userDAO.getUserByRoleId(result.client);
+    delete client.password;
     // Populates ServiceCall.technician using his/her role_id.
-    const technician = await this.userDAO.getUserByRoleId(result[0].technician);
-    delete technician[0].password;
+    const [technician] = await this.userDAO.getUserByRoleId(result.technician);
+    delete technician.password;
     if (
-      result.length != 1 ||
-      !result[0].id ||
-      !result[0].description ||
-      !result[0].status ||
-      !result[0].created_at ||
-      !result[0].updated_at
+      !result ||
+      !result.id ||
+      !result.description ||
+      !result.status ||
+      !result.created_at ||
+      !result.updated_at
     ) {
       throw new InternalServerErrorException(`Calls service got invalid data`);
     }
     const call: ExtendedCallDto = {
-      title: result[0].title,
-      description: result[0].description,
-      total_value: result[0].total_value,
-      status: result[0].status,
-      id: result[0].id,
-      created_at: result[0].created_at,
-      updated_at: result[0].updated_at,
-      service: service[0],
-      client: client[0],
-      technician: technician[0],
+      title: result.title,
+      description: result.description,
+      total_value: result.total_value,
+      status: result.status,
+      id: result.id,
+      created_at: result.created_at,
+      updated_at: result.updated_at,
+      service: service,
+      client: client,
+      technician: technician,
       additional_costs: additional_costs,
     };
     return call;
@@ -127,15 +126,15 @@ export class ServiceCallService {
     if (!data.id) {
       throw new InternalServerErrorException(`Calls service got invalid data.`);
     }
-    const getCall = await this.serviceCallDAO.getServiceCall(data.id);
-    if (!getCall[0].id) {
+    const [getCall] = await this.serviceCallDAO.getServiceCall(data.id);
+    if (!getCall.id) {
       throw new NotFoundException(`Service call not found, unable to update.`);
     }
     const call = {
-      ...getCall[0],
-      title: data.title ?? getCall[0].title,
-      description: data.description ?? getCall[0].description,
-      status: data.status ?? getCall[0].status,
+      ...getCall,
+      title: data.title ?? getCall.title,
+      description: data.description ?? getCall.description,
+      status: data.status ?? getCall.status,
     };
     await this.serviceCallDAO.updateServiceCall(call);
     return true;
@@ -166,26 +165,26 @@ export class ServiceCallService {
   }
 
   public async getCallbyCostId(id: number): Promise<ExtendedCallDto> {
-    const callCost = await this.callCostsDAO.getCallCostById(id);
-    if (callCost.length != 1 || !callCost[0].service_call) {
+    const [callCost] = await this.callCostsDAO.getCallCostById(id);
+    if (!callCost || !callCost.service_call) {
       throw new InternalServerErrorException(
         `Failed to find call cost, service received invalid data.`,
       );
     }
-    return await this.getServiceCall(callCost[0].service_call);
+    return await this.getServiceCall(callCost.service_call);
   }
 
   public async deleteCallCosts(id: number): Promise<boolean> {
-    const callCost = await this.callCostsDAO.getCallCostById(id);
-    if (callCost.length != 1 || !callCost[0].service_call) {
+    const [callCost] = await this.callCostsDAO.getCallCostById(id);
+    if (!callCost || !callCost.service_call) {
       throw new InternalServerErrorException(
         `Failed to find call cost, service received invalid data.`,
       );
     }
     const costResult = await this.callCostsDAO.deleteCallCosts(id);
     const callResult = await this.updateCallTotalValue(
-      callCost[0].service_call,
-      callCost[0].value * -1,
+      callCost.service_call,
+      callCost.value * -1,
     );
     return costResult && callResult;
   }

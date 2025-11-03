@@ -84,8 +84,8 @@ export class UserService {
   }
 
   public async updateUser(data: UserUpdateDto): Promise<boolean> {
-    const user: User[] = await this.userDAO.getUserById(data.id);
-    if (!user[0]?.user_id) {
+    const [user]: User[] = await this.userDAO.getUserById(data.id);
+    if (!user) {
       throw new NotFoundException(`No user found with id: ${data.id}`);
     }
     let newPassword: string | null = null;
@@ -93,14 +93,15 @@ export class UserService {
       newPassword = await argon2.hash(data.password);
     }
     const updatedUser: User = {
-      user_id: user[0].user_id,
-      name: data.name ?? user[0].name,
-      email: user[0].email,
-      password: newPassword ?? user[0].password,
-      pfp: data.pfp ?? user[0].pfp,
-      role: user[0].role,
-      role_id: user[0].role_id,
-      working_hours: data.working_hours ?? user[0].working_hours,
+      user_id: user.user_id,
+      name: data.name ?? user.name,
+      email: user.email,
+      password: newPassword ?? user.password,
+      pfp: data.pfp ?? user.pfp,
+      role: user.role,
+      role_id: user.role_id,
+      last_logout: data.last_logout ?? user.last_logout,
+      working_hours: data.working_hours ?? user.working_hours,
     };
     return this.userDAO.updateUser(updatedUser);
   }
@@ -108,11 +109,11 @@ export class UserService {
   public async getUser(data: UserGetDto): Promise<User | null> {
     let user: User | null = null;
     if (!data.id) {
-      const result = await this.userDAO.getUserByEmail(data.email);
-      user = result[0];
+      const [result] = await this.userDAO.getUserByEmail(data.email);
+      user = result;
     } else {
-      const result = await this.userDAO.getUserById(data.id);
-      user = result[0];
+      const [result] = await this.userDAO.getUserById(data.id);
+      user = result;
     }
     if (user && user.user_id) {
       user.password = undefined;
@@ -138,11 +139,11 @@ export class UserService {
   }
 
   public async deleteUser(id: User['user_id']): Promise<boolean> {
-    const user: User[] = await this.userDAO.getUserById(id);
-    if (!user[0]?.user_id) {
+    const [user] = await this.userDAO.getUserById(id);
+    if (!user) {
       throw new NotFoundException(`No user found with id: ${id}`);
     }
-    if (user[0].role == 'admin') {
+    if (user.role == 'admin') {
       const adminCount = await this.listUser('admin');
       if (adminCount.length == 1) {
         throw new BadRequestException(

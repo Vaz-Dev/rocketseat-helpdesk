@@ -20,9 +20,9 @@ export class ServiceTypeService {
   }
 
   async getServiceType(id: number): Promise<ServiceType> {
-    const result = await this.serviceTypeDAO.getServiceType(id);
-    if (result.length == 1) {
-      return result[0];
+    const [result] = await this.serviceTypeDAO.getServiceType(id);
+    if (result) {
+      return result;
     } else {
       throw new NotFoundException(`No service type with id: ${id}`);
     }
