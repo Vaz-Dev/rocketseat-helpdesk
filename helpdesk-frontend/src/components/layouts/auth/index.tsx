@@ -1,5 +1,5 @@
 import "./styles.module.css";
-import { ArrowIcon } from "../../../assets/icon/arrow";
+import { ArrowIcon } from "../../icons";
 
 import { Outlet } from "react-router";
 
