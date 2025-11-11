@@ -1,6 +1,8 @@
+import type { Icon } from "./interface/icon.interface";
+
 type Props = React.ComponentProps<"svg">;
 
-export function EyeIcon({ ...props }: Props) {
+export function EyeIcon({ ...props }: Props): Icon {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

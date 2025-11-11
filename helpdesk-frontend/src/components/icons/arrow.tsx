@@ -1,6 +1,8 @@
+import type { Icon } from "./interface/icon.interface";
+
 type Props = React.ComponentProps<"svg"> & { point: string };
 
-export function ArrowIcon({ point, ...props }: Props) {
+export function ArrowIcon({ point, ...props }: Props): Icon {
   let rotateValue = 0;
   switch (point) {
     case "up":
