@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router";
-import { AuthLayout, DashboardLayout } from "../components/layouts";
-import { Login, Register } from "../pages";
+import { AuthLayout } from "../components/layouts";
+import { Login, Register, Dashboard } from "../pages";
 import { Redirect } from "./Redirect";
 
 // import { Home } from "../pages/Home"
@@ -17,10 +17,7 @@ export function AppRoutes() {
         <Route path="/cadastrar" index element={<Register />} />
       </Route>
 
-      <Route path="/painel" element={<DashboardLayout />}>
-        {/*<Route path="/products" element={<Products />} />*/}
-        {/*<Route path="/product:id" element={<Product />} />*/}
-      </Route>
+      <Route path="/painel" element=<Dashboard /> />
 
       {/*<Route path="*" element={<NotFound />} />*/}
     </Routes>

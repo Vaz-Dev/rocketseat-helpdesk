@@ -20,10 +20,8 @@ import { CheckCircleIcon } from "./circle-check";
 import { ClipboardListIcon } from "./clipboard-list";
 import { CheckBigCircleIcon } from "./circle-check-big";
 import { XIcon } from "./x";
-import type { Icon } from "./interface/icon.interface";
 
-export type {
-  Icon,
+export {
   EyeIcon,
   EditIcon,
   MenuIcon,

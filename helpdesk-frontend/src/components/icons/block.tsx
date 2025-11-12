@@ -1,8 +1,6 @@
-import type { Icon } from "./interface/icon.interface";
-
 type Props = React.ComponentProps<"svg">;
 
-export function BlockIcon({ ...props }: Props): Icon {
+export function BlockIcon({ ...props }: Props) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

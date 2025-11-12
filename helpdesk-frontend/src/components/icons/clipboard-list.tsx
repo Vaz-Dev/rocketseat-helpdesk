@@ -1,8 +1,6 @@
-import type { Icon } from "./interface/icon.interface";
-
 type Props = React.ComponentProps<"svg">;
 
-export function ClipboardListIcon({ ...props }: Props): Icon {
+export function ClipboardListIcon({ ...props }: Props) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -13,9 +11,9 @@ export function ClipboardListIcon({ ...props }: Props): Icon {
       {...props}
     >
       <path
-        fill-rule="evenodd"
+        fillRule="evenodd"
         d="M9.333 4A2.667 2.667 0 0 1 12 1.333h8A2.667 2.667 0 0 1 22.667 4H24a4 4 0 0 1 4 4v18.667a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4h1.333Zm0 2.667H8A1.333 1.333 0 0 0 6.667 8v18.667A1.333 1.333 0 0 0 8 28h16a1.333 1.333 0 0 0 1.333-1.333V8A1.333 1.333 0 0 0 24 6.667h-1.333A2.667 2.667 0 0 1 20 9.333h-8a2.667 2.667 0 0 1-2.667-2.666Zm10.667 0h-8V4h8v2.667Zm-10.667 8c0-.737.597-1.334 1.334-1.334h.013a1.333 1.333 0 1 1 0 2.667h-.013a1.333 1.333 0 0 1-1.334-1.333Zm5.334 0c0-.737.597-1.334 1.333-1.334h5.333a1.333 1.333 0 1 1 0 2.667H16a1.333 1.333 0 0 1-1.333-1.333Zm-5.334 6.666c0-.736.597-1.333 1.334-1.333h.013a1.333 1.333 0 0 1 0 2.667h-.013a1.333 1.333 0 0 1-1.334-1.334Zm5.334 0c0-.736.597-1.333 1.333-1.333h5.333a1.333 1.333 0 0 1 0 2.667H16a1.333 1.333 0 0 1-1.333-1.334Z"
-        clip-rule="evenodd"
+        clipRule="evenodd"
       />
     </svg>
   );

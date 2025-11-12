@@ -1,8 +1,6 @@
-import type { Icon } from "./interface/icon.interface";
-
 type Props = React.ComponentProps<"svg">;
 
-export function MenuIcon({ ...props }: Props): Icon {
+export function MenuIcon({ ...props }: Props) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -13,9 +11,9 @@ export function MenuIcon({ ...props }: Props): Icon {
       {...props}
     >
       <path
-        fill-rule="evenodd"
+        fillRule="evenodd"
         d="M4 8c0-.736.597-1.333 1.333-1.333h21.334a1.333 1.333 0 0 1 0 2.666H5.333A1.333 1.333 0 0 1 4 8Zm0 8c0-.736.597-1.333 1.333-1.333h21.334a1.333 1.333 0 0 1 0 2.666H5.333A1.333 1.333 0 0 1 4 16Zm0 8c0-.736.597-1.333 1.333-1.333h21.334a1.333 1.333 0 0 1 0 2.666H5.333A1.333 1.333 0 0 1 4 24Z"
-        clip-rule="evenodd"
+        clipRule="evenodd"
       />
     </svg>
   );

@@ -1,8 +1,6 @@
-import type { Icon } from "./interface/icon.interface";
-
 type Props = React.ComponentProps<"svg">;
 
-export function UsersIcon({ ...props }: Props): Icon {
+export function UsersIcon({ ...props }: Props) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -13,9 +11,9 @@ export function UsersIcon({ ...props }: Props): Icon {
       {...props}
     >
       <path
-        fill-rule="evenodd"
+        fillRule="evenodd"
         d="M12 5.333a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-6.667 4a6.667 6.667 0 1 1 13.334 0 6.667 6.667 0 0 1-13.334 0Zm14.709-5.49a1.333 1.333 0 0 1 1.622-.961 6.667 6.667 0 0 1 0 12.916 1.333 1.333 0 0 1-.661-2.583 4 4 0 0 0 0-7.75 1.333 1.333 0 0 1-.961-1.622ZM3.286 20.619A6.667 6.667 0 0 1 8 18.667h8a6.666 6.666 0 0 1 6.667 6.666V28A1.333 1.333 0 1 1 20 28v-2.667a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4V28a1.333 1.333 0 1 1-2.667 0v-2.667a6.67 6.67 0 0 1 1.953-4.714Zm20.756-.779a1.333 1.333 0 0 1 1.625-.958 6.667 6.667 0 0 1 5 6.45V28A1.333 1.333 0 1 1 28 28v-2.666a4 4 0 0 0-3-3.87 1.333 1.333 0 0 1-.958-1.624Z"
-        clip-rule="evenodd"
+        clipRule="evenodd"
       />
     </svg>
   );

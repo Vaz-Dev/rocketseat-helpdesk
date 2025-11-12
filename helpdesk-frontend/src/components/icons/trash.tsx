@@ -1,8 +1,6 @@
-import type { Icon } from "./interface/icon.interface";
-
 type Props = React.ComponentProps<"svg">;
 
-export function TrashIcon({ ...props }: Props): Icon {
+export function TrashIcon({ ...props }: Props) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -13,9 +11,9 @@ export function TrashIcon({ ...props }: Props): Icon {
       {...props}
     >
       <path
-        fill-rule="evenodd"
+        fillRule="evenodd"
         d="M12.443 4.443c-.313.313-.443.657-.443.89v1.334h8V5.333c0-.233-.13-.577-.443-.89C19.244 4.13 18.9 4 18.667 4h-5.334c-.233 0-.577.13-.89.443Zm10.224 2.224V5.333c0-1.1-.537-2.089-1.224-2.776-.687-.687-1.676-1.224-2.776-1.224h-5.334c-1.1 0-2.089.537-2.776 1.224-.687.687-1.224 1.676-1.224 2.776v1.334H4a1.333 1.333 0 1 0 0 2.666h1.333v17.334c0 1.1.537 2.089 1.224 2.776.687.687 1.676 1.224 2.776 1.224h13.334c1.1 0 2.089-.537 2.776-1.224.687-.687 1.224-1.676 1.224-2.776V9.333H28a1.333 1.333 0 0 0 0-2.666h-5.333ZM8 9.333v17.334c0 .233.13.577.443.89.313.313.657.443.89.443h13.334c.233 0 .577-.13.89-.443.313-.313.443-.657.443-.89V9.333H8Z"
-        clip-rule="evenodd"
+        clipRule="evenodd"
       />
     </svg>
   );
